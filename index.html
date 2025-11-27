@@ -836,25 +836,32 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-        // --- HARDCODED CONFIG FOR GITHUB PAGES ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAURdgFx9NiE1PmkJwx5lZ5-vjzB9iS3Ss",
-            authDomain: "musicjp-d9938.firebaseapp.com",
-            projectId: "musicjp-d9938",
-            storageBucket: "musicjp-d9938.firebasestorage.app",
-            messagingSenderId: "761980111553",
-            appId: "1:761980111553:web:ba9a3e1f84fef3bbb7a240",
-            measurementId: "G-XFVC737RL6"
-        };
-        const appId = "musicjp-d9938"; 
-        // ----------------------------------------
+        // --- SMART CONFIGURATION ---
+        let firebaseConfig, appId;
+
+        // Check if running in Preview Environment (Internal keys)
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        } else {
+            // Fallback for GitHub Pages (User's Keys)
+            firebaseConfig = {
+                apiKey: "AIzaSyAURdgFx9NiE1PmkJwx5lZ5-vjzB9iS3Ss",
+                authDomain: "musicjp-d9938.firebaseapp.com",
+                projectId: "musicjp-d9938",
+                storageBucket: "musicjp-d9938.firebasestorage.app",
+                messagingSenderId: "761980111553",
+                appId: "1:761980111553:web:ba9a3e1f84fef3bbb7a240",
+                measurementId: "G-XFVC737RL6"
+            };
+            appId = "musicjp-d9938"; 
+        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- MOCK DATA (DEMO MODE) ---
-        // Used initially so page isn't blank, and as fallback if Auth fails.
+        // --- MOCK DATA (Initial Placeholder) ---
         let MOCK_SONGS = [
             { 
                 id: 'mock1', 
@@ -894,13 +901,10 @@
         ];
 
         // --- GLOBAL STATE ---
-        // Initialize with mocks immediately
         let songsDB = [...MOCK_SONGS];
         let feedbackDB = [...MOCK_FEEDBACK];
-        let isDemoMode = false;
 
         // --- INITIAL RENDER ---
-        // Render immediately with mocks
         window.addEventListener('DOMContentLoaded', () => {
             renderPublicSongs();
             renderPublicReviews();
@@ -909,20 +913,13 @@
         // --- AUTH FLOW ---
         const initAuth = async () => {
             try {
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("Auth Error:", error);
-                isDemoMode = true;
-                
-                if (error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed') {
-                    const errDiv = document.createElement('div');
-                    errDiv.className = "fixed top-0 left-0 w-full bg-yellow-600 text-white p-3 text-center z-50 font-bold shadow-lg flex justify-between px-8";
-                    errDiv.innerHTML = `
-                        <span>⚠️ DEMO MODE: Enable 'Anonymous' Sign-in in Firebase Console to save real data.</span>
-                        <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
-                    `;
-                    document.body.appendChild(errDiv);
-                }
             }
         };
         initAuth();
@@ -930,25 +927,25 @@
         // Data References
         let songsCol, feedbackCol;
 
+        // PATHS: Using strict path structure to fix permission errors
+        // This structure works for both Preview Environment and standard Firebase Projects
+        const getSongsCol = () => collection(db, 'artifacts', appId, 'public', 'data', 'songs');
+        const getFeedbackCol = () => collection(db, 'artifacts', appId, 'public', 'data', 'feedback');
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Initialize Collections
-                songsCol = collection(db, 'songs');
-                feedbackCol = collection(db, 'feedback');
+                // Initialize Collections with dynamic App ID
+                songsCol = getSongsCol();
+                feedbackCol = getFeedbackCol();
 
                 // Real-time Listeners
-                // Only start listening if auth succeeded. 
-                // If it failed/demo mode, we just stay with MOCK data.
                 onSnapshot(songsCol, (snapshot) => {
                     if (!snapshot.empty) {
                         songsDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                         renderPublicSongs();
                         renderAdminSongs();
                     }
-                }, (err) => {
-                    console.log("Firestore Access Denied (Likely Rules or Auth):", err);
-                    isDemoMode = true;
-                });
+                }, (err) => console.log("Firestore Songs Error:", err));
 
                 onSnapshot(feedbackCol, (snapshot) => {
                     if (!snapshot.empty) {
@@ -956,7 +953,7 @@
                         renderPublicReviews();
                         renderAdminFeedback();
                     }
-                });
+                }, (err) => console.log("Firestore Feedback Error:", err));
             }
         });
 
@@ -1006,8 +1003,7 @@
             if(!container) return;
             container.innerHTML = '';
             
-            // In demo mode, show all. In real mode, show approved.
-            const approved = feedbackDB.filter(r => r.approved || isDemoMode);
+            const approved = feedbackDB.filter(r => r.approved);
             
             if(approved.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 italic text-center">No reviews yet. Be the first!</p>';
@@ -1038,17 +1034,16 @@
         if(feedbackForm) {
             feedbackForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
-                if(isDemoMode) {
-                    alert("Demo Mode: Review not saved to database (Enable Anonymous Auth in Firebase Console to fix).");
-                    return;
-                }
-
                 const name = document.getElementById('review-name').value;
                 const rating = document.getElementById('review-rating').value;
                 const text = document.getElementById('review-text').value;
 
                 if(rating == 0) { alert('Please select a star rating.'); return; }
+
+                if (!auth.currentUser) {
+                    alert("Connecting to database... Please try again in a moment.");
+                    return;
+                }
 
                 try {
                     await addDoc(feedbackCol, {
@@ -1064,7 +1059,7 @@
                     alert('Review submitted! Waiting for approval.');
                 } catch (err) {
                     console.error("Error adding review: ", err);
-                    alert("Failed to submit review. Check Firebase Console permissions.");
+                    alert("Failed to submit review.");
                 }
             });
         }
@@ -1137,8 +1132,8 @@
             songForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                if(isDemoMode) {
-                    alert("Demo Mode: Song not saved to database (Enable Anonymous Auth in Firebase Console to fix).");
+                if (!auth.currentUser) {
+                    alert("Connecting... try again.");
                     return;
                 }
 
@@ -1157,7 +1152,7 @@
 
                 try {
                     if (id) {
-                        await updateDoc(doc(db, 'songs', id), songData);
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', id), songData);
                     } else {
                         await addDoc(songsCol, songData);
                     }
@@ -1171,9 +1166,8 @@
 
         // Admin Actions
         window.deleteSong = async (id) => {
-            if(isDemoMode) { alert("Demo Mode: Delete ignored."); return; }
             if(confirm('Delete this song?')) {
-                await deleteDoc(doc(db, 'songs', id));
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', id));
             }
         };
 
@@ -1195,14 +1189,12 @@
         };
 
         window.approveReview = async (id) => {
-            if(isDemoMode) { alert("Demo Mode: Approval ignored."); return; }
-            await updateDoc(doc(db, 'feedback', id), { approved: true });
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedback', id), { approved: true });
         };
 
         window.deleteReview = async (id) => {
-            if(isDemoMode) { alert("Demo Mode: Delete ignored."); return; }
             if(confirm('Delete this review?')) {
-                await deleteDoc(doc(db, 'feedback', id));
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedback', id));
             }
         };
 
