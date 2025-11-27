@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAYU STAR | Official Music Artist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#FF2E63',
+                            dark: '#080808',
+                            gray: '#252A34',
+                            cyan: '#08D9D6'
+                        }
+                    },
+                    fontFamily: {
+                        header: ['Oswald', 'sans-serif'],
+                        body: ['Rajdhani', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hero-pattern': "linear-gradient(to bottom, rgba(8,8,8,0.3), rgba(8,8,8,1)), url('https://images.unsplash.com/photo-1516280440614-6697288d5d38?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')",
+                        'vinyl': "url('https://www.transparenttextures.com/patterns/dark-matter.png')"
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #080808;
+            color: #ffffff;
+        }
+        
+        .glass-nav {
+            background: rgba(8, 8, 8, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-panel { 
+            background: rgba(37, 42, 52, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        .music-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .audio-bar {
+            height: 4px;
+            width: 100%;
+            background: #252A34;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .audio-progress {
+            height: 100%;
+            background: #FF2E63;
+            width: 0%;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .audio-progress::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -4px;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .audio-bar:hover .audio-progress::after {
+            opacity: 1;
+        }
+
+        /* Song Page Custom Audio Styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            background: #252A34;
+            border-radius: 5px;
+            background-image: linear-gradient(#FF2E63, #FF2E63);
+            background-repeat: no-repeat;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 2px 0 #555;
+        }
+        .lyrics-scroll::-webkit-scrollbar { width: 6px; }
+        .lyrics-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080808; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF2E63; 
+        }
+
+        .sidebar-link.active { background-color: #FF2E63; color: white; }
+        
+        /* Star Rating */
+        .star-rating i {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating i:hover,
+        .star-rating i.active {
+            color: #FF2E63;
+        }
+    </style>
+</head>
+<body class="font-body antialiased overflow-x-hidden">
+
+    <!-- LOGIN MODAL (Shared) -->
+    <div id="login-modal" class="hidden fixed inset-0 z-[100] bg-[#080808]/95 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl border-t-4 border-brand-red text-center relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+            <div class="mb-6">
+                <i class="fa-solid fa-user-lock text-5xl text-brand-red mb-4"></i>
+                <h2 class="text-3xl font-header font-bold text-white">ADMIN ACCESS</h2>
+                <p class="text-gray-400">Restricted Area</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div class="relative">
+                    <input type="password" id="password-input" placeholder="Enter Password" class="w-full bg-black/50 border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-red transition">
+                </div>
+                <p id="login-error" class="text-brand-red text-sm hidden">Access Denied: Invalid Password</p>
+                <button type="submit" class="w-full bg-brand-red hover:bg-white hover:text-brand-red text-white font-bold py-3 rounded transition uppercase tracking-wider">
+                    Unlock Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PUBLIC WEBSITE VIEW (Home)                 -->
+    <!-- ========================================== -->
+    <div id="public-view" class="block">
+        
+        <!-- Audio Player Fixed Bottom -->
+        <div id="sticky-player" class="fixed bottom-0 left-0 w-full bg-brand-gray/95 backdrop-blur-md border-t border-white/5 z-50 transform translate-y-full transition-transform duration-500 shadow-2xl">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4 w-1/4">
+                    <img id="player-img" src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150" alt="Album Art" class="w-12 h-12 rounded object-cover shadow-lg animate-spin-slow" style="animation-play-state: paused;">
+                    <div class="hidden sm:block">
+                        <h4 id="player-title" class="text-white font-bold font-header tracking-wide text-sm truncate">Select a Track</h4>
+                        <p id="player-artist" class="text-gray-400 text-xs">JAYU STAR</p>
+                    </div>
+                </div>
+
+                <div class="flex-1 max-w-2xl flex flex-col items-center justify-center gap-1">
+                    <div class="flex items-center gap-6">
+                        <button class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-backward-step"></i></button>
+                        <button id="main-play-btn" class="w-10 h-10 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-red hover:text-white transition shadow-lg transform hover:scale-105">
+                            <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-forward-step"></i></button>
+                    </div>
+                    <div class="w-full flex items-center gap-3 text-xs text-gray-400 font-mono">
+                        <span id="current-time">0:00</span>
+                        <div class="audio-bar" id="progress-container">
+                            <div class="audio-progress" id="progress-bar"></div>
+                        </div>
+                        <span id="duration">3:45</span>
+                    </div>
+                </div>
+
+                <div class="w-1/4 flex justify-end items-center gap-3">
+                    <button class="text-gray-400 hover:text-brand-red"><i class="fa-regular fa-heart"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav id="navbar" class="fixed w-full z-40 transition-all duration-300 py-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-12">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <div class="w-8 h-8 bg-brand-red rounded-sm flex items-center justify-center font-header font-bold text-white text-xl">J</div>
+                        <span class="font-header font-bold text-2xl tracking-tighter">JAYU <span class="text-brand-red">STAR</span></span>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-8">
+                            <a href="#home" class="text-white hover:text-brand-red px-3 py-2 rounded-md text-sm font-medium tracking-widest uppercase transition">Home</a>
+                            <a href="#releases" class="text-gray-300 hover:text-brand-red px-3 py-2 rounded-md text-sm font-medium tracking-widest uppercase transition">Music</a>
+                            <button onclick="openFeedbackView()" class="text-gray-300 hover:text-brand-red px-3 py-2 rounded-md text-sm font-medium tracking-widest uppercase transition">Reviews</button>
+                            <a href="#about" class="text-gray-300 hover:text-brand-red px-3 py-2 rounded-md text-sm font-medium tracking-widest uppercase transition">Bio</a>
+                            <a href="#events" class="text-gray-300 hover:text-brand-red px-3 py-2 rounded-md text-sm font-medium tracking-widest uppercase transition">Tour</a>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex items-center gap-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-spotify text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-youtube text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-instagram text-xl"></i></a>
+                        <button class="bg-transparent border border-brand-red text-brand-red hover:bg-brand-red hover:text-white px-4 py-1.5 rounded text-sm font-header font-bold tracking-wider transition uppercase">
+                            Subscribe
+                        </button>
+                        <!-- Admin Trigger -->
+                        <button onclick="openLoginModal()" class="text-gray-500 hover:text-brand-cyan transition ml-2 focus:outline-none" title="Admin Dashboard">
+                            <i class="fa-solid fa-user-shield text-lg"></i>
+                        </button>
+                    </div>
+                    <div class="-mr-2 flex md:hidden">
+                        <button id="mobile-menu-btn" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden bg-brand-dark/95 backdrop-blur-xl absolute w-full border-b border-gray-800">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+                    <a href="#home" class="text-white block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest border-b border-gray-800">Home</a>
+                    <a href="#releases" class="text-gray-300 block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest border-b border-gray-800">Music</a>
+                    <button onclick="openFeedbackView(); document.getElementById('mobile-menu').classList.add('hidden');" class="w-full text-gray-300 block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest border-b border-gray-800">Reviews</button>
+                    <button onclick="openLoginModal()" class="w-full text-gray-300 block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest border-b border-gray-800">Admin Login</button>
+                    <a href="#about" class="text-gray-300 block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest border-b border-gray-800">Bio</a>
+                    <a href="#events" class="text-gray-300 block px-3 py-4 rounded-md text-base font-bold uppercase tracking-widest">Tour</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="relative h-screen flex items-center justify-center bg-hero-pattern bg-cover bg-center bg-no-repeat bg-fixed">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent"></div>
+            
+            <div class="relative z-10 text-center px-4 max-w-5xl mx-auto mt-16">
+                <p class="text-brand-cyan font-bold tracking-[0.3em] uppercase mb-4 animate-fade-in-up">The New Sound of India</p>
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-header font-bold text-white mb-6 leading-none tracking-tighter">
+                    JAYU <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-red to-purple-600">STAR</span>
+                </h1>
+                <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light">
+                    Blending traditional Timli rhythms with futuristic electronic beats. Experience the evolution of sound.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button onclick="document.getElementById('releases').scrollIntoView()" class="bg-brand-red text-white px-8 py-4 rounded-full font-header font-bold text-lg tracking-widest hover:bg-white hover:text-brand-red transition transform hover:scale-105 shadow-lg shadow-brand-red/30">
+                        LATEST DROPS
+                    </button>
+                    <button class="bg-transparent border border-white/30 text-white px-8 py-4 rounded-full font-header font-bold text-lg tracking-widest hover:bg-white hover:text-black transition backdrop-blur-sm">
+                        WATCH VIDEO <i class="fa-solid fa-play ml-2 text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
+                <span class="text-xs text-gray-500 uppercase tracking-widest">Scroll</span>
+                <i class="fa-solid fa-chevron-down text-brand-red"></i>
+            </div>
+        </section>
+
+        <!-- Latest Releases -->
+        <section id="releases" class="py-24 bg-brand-dark relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-brand-red/5 rounded-full filter blur-3xl -z-10"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-header font-bold text-white mb-2">LATEST <span class="text-brand-red">RELEASES</span></h2>
+                        <div class="h-1 w-20 bg-brand-red"></div>
+                    </div>
+                    <a href="#" class="hidden md:block text-brand-cyan hover:text-white transition mt-4 md:mt-0 uppercase tracking-widest text-sm font-bold">View All Discography <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="public-songs-grid">
+                    <!-- Dynamic Songs Loaded via Firebase -->
+                    <div class="text-gray-500 col-span-full text-center py-10">Loading latest hits...</div>
+                </div>
+                
+                <div class="mt-12 text-center">
+                    <a href="#" class="inline-flex items-center gap-2 text-white border border-brand-red px-8 py-3 rounded hover:bg-brand-red transition duration-300 font-header font-bold tracking-wider uppercase">
+                        View Complete Discography <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Playlists Section -->
+        <section class="py-20 bg-[#0c0c0c] border-t border-gray-900">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl md:text-4xl font-header font-bold text-white mb-8">FEATURED <span class="text-brand-cyan">PLAYLISTS</span></h2>
+                
+                <div class="flex overflow-x-auto pb-8 gap-6 snap-x">
+                    <!-- Playlist 1 -->
+                    <div class="min-w-[280px] md:min-w-[320px] snap-center bg-gradient-to-br from-purple-900 to-brand-dark rounded-2xl p-6 relative overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-cyan/50 transition duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-50"><i class="fa-solid fa-music text-6xl text-white/10"></i></div>
+                        <h3 class="text-2xl font-header font-bold text-white mb-2 relative z-10">Timli Beats</h3>
+                        <p class="text-gray-400 text-sm mb-6 relative z-10">High energy traditional beats for the dance floor.</p>
+                        <div class="flex items-center gap-2 text-xs font-bold text-brand-cyan uppercase tracking-widest group-hover:translate-x-2 transition">
+                            Listen Now <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Playlist 2 -->
+                    <div class="min-w-[280px] md:min-w-[320px] snap-center bg-gradient-to-br from-brand-red/20 to-brand-dark rounded-2xl p-6 relative overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-red/50 transition duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-50"><i class="fa-solid fa-fire text-6xl text-white/10"></i></div>
+                        <h3 class="text-2xl font-header font-bold text-white mb-2 relative z-10">Hindi Vibes</h3>
+                        <p class="text-gray-400 text-sm mb-6 relative z-10">Romantic and upbeat Hindi remixes.</p>
+                        <div class="flex items-center gap-2 text-xs font-bold text-brand-red uppercase tracking-widest group-hover:translate-x-2 transition">
+                            Listen Now <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Playlist 3 -->
+                    <div class="min-w-[280px] md:min-w-[320px] snap-center bg-gradient-to-br from-blue-900 to-brand-dark rounded-2xl p-6 relative overflow-hidden group cursor-pointer border border-white/5 hover:border-blue-500/50 transition duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-50"><i class="fa-solid fa-cloud text-6xl text-white/10"></i></div>
+                        <h3 class="text-2xl font-header font-bold text-white mb-2 relative z-10">Chill Mix</h3>
+                        <p class="text-gray-400 text-sm mb-6 relative z-10">Slowed, reverb, and relaxed evening tunes.</p>
+                        <div class="flex items-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-widest group-hover:translate-x-2 transition">
+                            Listen Now <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bio Section -->
+        <section id="about" class="py-24 relative overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-brand-red/20 blur-xl rounded-full"></div>
+                        <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Jayu Star Profile" class="relative rounded-lg shadow-2xl grayscale hover:grayscale-0 transition duration-700 transform hover:scale-[1.02] border-r-4 border-b-4 border-brand-red">
+                        <div class="absolute -bottom-10 -right-10 bg-brand-dark p-6 rounded shadow-xl border border-gray-800 hidden md:block">
+                            <p class="text-brand-red text-4xl font-bold font-header">10M+</p>
+                            <p class="text-gray-400 text-sm uppercase tracking-widest">Streams Worldwide</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-brand-cyan font-bold tracking-widest uppercase mb-2">The Artist</h4>
+                        <h2 class="text-4xl md:text-5xl font-header font-bold text-white mb-6">THE VOICE OF <br><span class="text-brand-red">MODERN TIMLI</span></h2>
+                        <p class="text-gray-400 text-lg leading-relaxed mb-6">
+                            Born from the vibrant streets and raised on rhythm, Jayu Star bridges the gap between folklore and the future. Starting with local gigs in Gujarat, he has transformed the regional soundscape by infusing heavy bass lines and synth-wave aesthetics into traditional folk songs.
+                        </p>
+                        <p class="text-gray-400 text-lg leading-relaxed mb-8">
+                            "Music isn't just sound; it's a movement of culture through time."
+                        </p>
+
+                        <div class="mb-10">
+                            <a href="#" class="inline-flex items-center gap-2 text-white border border-brand-red px-6 py-3 rounded hover:bg-brand-red transition duration-300 font-header font-bold tracking-wider uppercase">
+                                Read Full Biography <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="flex gap-6 border-t border-gray-800 pt-8">
+                            <div>
+                                <span class="block text-2xl font-bold text-white font-header">50+</span>
+                                <span class="text-xs text-gray-500 uppercase">Tracks Released</span>
+                            </div>
+                            <div>
+                                <span class="block text-2xl font-bold text-white font-header">120+</span>
+                                <span class="text-xs text-gray-500 uppercase">Live Shows</span>
+                            </div>
+                            <div>
+                                <span class="block text-2xl font-bold text-white font-header">5yr</span>
+                                <span class="text-xs text-gray-500 uppercase">Career</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="py-24 bg-zinc-900/50">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-header font-bold text-white">UPCOMING <span class="text-brand-red">SHOWS</span></h2>
+                    <p class="text-gray-400 mt-2">Catch the energy live.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Event 1 -->
+                    <div class="bg-brand-gray/50 hover:bg-brand-gray p-6 rounded-lg flex flex-col md:flex-row items-center justify-between group transition duration-300 border border-transparent hover:border-brand-red/30">
+                        <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                            <div class="bg-brand-dark p-3 rounded text-center min-w-[80px]">
+                                <span class="block text-brand-red font-bold text-xl font-header">OCT</span>
+                                <span class="block text-white font-bold text-2xl">24</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white group-hover:text-brand-cyan transition">Neon Festival 2024</h3>
+                                <p class="text-gray-400 text-sm"><i class="fa-solid fa-location-dot mr-2"></i>Mumbai, India</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <button class="bg-transparent border border-white text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-black transition">Get Tickets</button>
+                        </div>
+                    </div>
+
+                    <!-- Event 2 -->
+                    <div class="bg-brand-gray/50 hover:bg-brand-gray p-6 rounded-lg flex flex-col md:flex-row items-center justify-between group transition duration-300 border border-transparent hover:border-brand-red/30">
+                        <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                            <div class="bg-brand-dark p-3 rounded text-center min-w-[80px]">
+                                <span class="block text-brand-red font-bold text-xl font-header">NOV</span>
+                                <span class="block text-white font-bold text-2xl">02</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white group-hover:text-brand-cyan transition">Gujarat Folk Summit</h3>
+                                <p class="text-gray-400 text-sm"><i class="fa-solid fa-location-dot mr-2"></i>Ahmedabad, GJ</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <button class="bg-transparent border border-white text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-black transition">Get Tickets</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter -->
+        <section class="py-20 relative">
+            <div class="absolute inset-0 bg-brand-red/10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30"></div>
+            <div class="max-w-3xl mx-auto px-4 text-center relative z-10">
+                <i class="fa-regular fa-paper-plane text-4xl text-brand-cyan mb-4"></i>
+                <h2 class="text-3xl font-header font-bold text-white mb-4">JOIN THE <span class="text-brand-red">STAR SQUAD</span></h2>
+                <p class="text-gray-300 mb-8">Get exclusive access to unreleased tracks, pre-sale tickets, and behind-the-scenes content.</p>
+                
+                <form class="flex flex-col sm:flex-row gap-3">
+                    <input type="email" placeholder="Enter your email address" class="flex-1 bg-black/50 border border-gray-700 text-white px-6 py-4 rounded-full focus:outline-none focus:border-brand-red transition">
+                    <button type="submit" class="bg-white text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-brand-cyan hover:text-white transition">Subscribe</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-black border-t border-gray-900 pt-16 pb-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-12">
+                    <div class="mb-6 md:mb-0 text-center md:text-left">
+                        <h2 class="text-2xl font-header font-bold text-white">JAYU <span class="text-brand-red">STAR</span></h2>
+                        <p class="text-gray-500 text-sm mt-1">Management: contact@jayustar.com</p>
+                    </div>
+                    <div class="flex gap-6">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-brand-red hover:text-white transition"><i class="fa-brands fa-soundcloud"></i></a>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+                    <p>&copy; 2024 JAYU STAR Music. All rights reserved.</p>
+                    <div class="flex gap-6 mt-4 md:mt-0">
+                        <a href="#" class="hover:text-gray-400">Privacy Policy</a>
+                        <a href="#" class="hover:text-gray-400">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SONG DETAILS VIEW (Hidden by default)      -->
+    <!-- ========================================== -->
+    <div id="song-view" class="hidden min-h-screen relative overflow-hidden bg-[#080808]">
+        <!-- Nav (Specific to song view) -->
+        <nav class="fixed w-full z-40 bg-brand-dark/95 backdrop-blur border-b border-gray-800 py-4">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-brand-red rounded-sm flex items-center justify-center font-header font-bold text-white text-xl">J</div>
+                    <span class="font-header font-bold text-2xl tracking-tighter">JAYU <span class="text-brand-red">STAR</span></span>
+                </div>
+                <button onclick="closeSongView()" class="text-gray-400 hover:text-white transition flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Back to Home
+                </button>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-16 relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <!-- Background Bloom -->
+             <div class="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-brand-red/10 to-transparent pointer-events-none -z-10"></div>
+
+             <!-- Song Header & Player Section -->
+             <div class="flex flex-col lg:flex-row gap-12 mb-20 animate-fade-in">
+                <!-- Left: Cover Art -->
+                <div class="w-full lg:w-1/2 flex flex-col items-center lg:items-start">
+                    <div class="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-gray-800 group">
+                        <img id="detail-cover-img" src="" alt="Song Cover" class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60"></div>
+                        <div class="absolute bottom-6 left-6">
+                            <span id="detail-category-badge" class="bg-brand-cyan text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Category</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Song Info & Player -->
+                <div class="w-full lg:w-1/2 flex flex-col justify-center">
+                    <h1 id="detail-song-title" class="text-5xl md:text-7xl font-header font-bold text-white mb-2 leading-none">Song Title</h1>
+                    <h2 id="detail-song-artist" class="text-2xl text-gray-400 mb-6 font-light">Artist Name</h2>
+                    
+                    <div class="flex flex-wrap gap-2 mb-8" id="detail-tags-container">
+                        <!-- Tags injected by JS -->
+                    </div>
+
+                    <!-- Custom Audio Player -->
+                    <div class="bg-brand-gray/50 p-6 rounded-xl border border-gray-700 mb-8 backdrop-blur-sm">
+                        <div class="flex items-center gap-6 mb-4">
+                            <button id="detail-play-btn" class="w-14 h-14 rounded-full bg-brand-red text-white flex items-center justify-center hover:scale-105 transition shadow-lg shadow-brand-red/30">
+                                <i class="fa-solid fa-play text-xl ml-1"></i>
+                            </button>
+                            <div class="flex-1">
+                                <input type="range" id="detail-seek-slider" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                                <div class="flex justify-between text-xs text-gray-400 mt-2 font-mono">
+                                    <span id="detail-current-time">0:00</span>
+                                    <span id="detail-duration">3:45</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-wrap gap-4 mb-8">
+                        <button class="flex-1 bg-white text-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-brand-cyan transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-download"></i> Download MP3
+                        </button>
+                        <div class="flex gap-2">
+                            <button class="w-12 h-12 rounded bg-green-600 text-white flex items-center justify-center hover:bg-green-500 transition" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></button>
+                            <button class="w-12 h-12 rounded bg-pink-600 text-white flex items-center justify-center hover:bg-pink-500 transition" title="Share on Instagram"><i class="fa-brands fa-instagram text-xl"></i></button>
+                            <button class="w-12 h-12 rounded bg-blue-600 text-white flex items-center justify-center hover:bg-blue-500 transition" title="Share on Facebook"><i class="fa-brands fa-facebook-f text-xl"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- YouTube Embed -->
+                    <div class="aspect-video w-full rounded-xl overflow-hidden border border-gray-800 shadow-xl">
+                        <iframe id="detail-yt-embed" class="w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lyrics Section -->
+            <div class="mb-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div class="lg:col-span-2">
+                    <h3 class="text-3xl font-header font-bold text-white mb-6 border-l-4 border-brand-red pl-4">LYRICS</h3>
+                    <div class="bg-brand-gray/30 p-8 rounded-xl border border-white/5 h-[400px] overflow-y-auto lyrics-scroll">
+                        <p id="detail-lyrics-content" class="text-gray-300 text-lg leading-relaxed whitespace-pre-line font-light">
+                            Loading lyrics...
+                        </p>
+                    </div>
+                </div>
+                <!-- Ad / Promo Space -->
+                <div class="hidden lg:flex flex-col justify-center items-center bg-brand-gray/20 rounded-xl border border-dashed border-gray-700 p-8 text-center">
+                    <i class="fa-solid fa-compact-disc text-6xl text-gray-600 mb-4"></i>
+                    <p class="text-gray-500 font-header uppercase tracking-widest">Available on All Platforms</p>
+                </div>
+            </div>
+
+            <!-- Related Songs -->
+            <div>
+                <h3 class="text-3xl font-header font-bold text-white mb-8">RELATED <span class="text-brand-red">TRACKS</span></h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="detail-related-grid">
+                    <!-- Related cards injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-black border-t border-gray-900 py-8 text-center text-gray-600 text-sm">
+            <p>&copy; 2024 JAYU STAR Music. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- FEEDBACK / REVIEW VIEW (Hidden by default) -->
+    <!-- ========================================== -->
+    <div id="feedback-view" class="hidden min-h-screen relative overflow-hidden bg-[#080808]">
+        <!-- Nav (Specific to feedback view) -->
+        <nav class="fixed w-full z-40 bg-brand-dark/95 backdrop-blur border-b border-gray-800 py-4">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-brand-red rounded-sm flex items-center justify-center font-header font-bold text-white text-xl">J</div>
+                    <span class="font-header font-bold text-2xl tracking-tighter">JAYU <span class="text-brand-red">STAR</span></span>
+                </div>
+                <button onclick="closeFeedbackView()" class="text-gray-400 hover:text-white transition flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Back to Home
+                </button>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-16 relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 animate-fade-in">
+                <h1 class="text-4xl md:text-5xl font-header font-bold text-white mb-4">FAN <span class="text-brand-red">REVIEWS</span></h1>
+                <p class="text-gray-400">Share your thoughts on the latest tracks and shows.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Feedback Form -->
+                <div class="bg-brand-gray/50 p-8 rounded-xl border border-gray-700 animate-fade-in">
+                    <h3 class="text-2xl font-header font-bold text-white mb-6 border-l-4 border-brand-cyan pl-4">LEAVE A REVIEW</h3>
+                    <form id="feedback-form" class="space-y-6">
+                        <div>
+                            <label class="block text-gray-400 text-sm uppercase tracking-wider mb-2">Your Name</label>
+                            <input type="text" id="review-name" required class="w-full bg-black/50 border border-gray-600 rounded p-3 text-white focus:border-brand-red focus:outline-none transition">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm uppercase tracking-wider mb-2">Rating</label>
+                            <div class="star-rating flex gap-2 text-2xl text-gray-600" id="star-rating-input">
+                                <i class="fa-solid fa-star" data-rating="1"></i>
+                                <i class="fa-solid fa-star" data-rating="2"></i>
+                                <i class="fa-solid fa-star" data-rating="3"></i>
+                                <i class="fa-solid fa-star" data-rating="4"></i>
+                                <i class="fa-solid fa-star" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="review-rating" value="0">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 text-sm uppercase tracking-wider mb-2">Feedback</label>
+                            <textarea id="review-text" rows="4" required class="w-full bg-black/50 border border-gray-600 rounded p-3 text-white focus:border-brand-red focus:outline-none transition"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-red text-white font-bold py-4 rounded hover:bg-white hover:text-brand-red transition uppercase tracking-widest shadow-lg">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Public Reviews List -->
+                <div class="bg-brand-gray/30 p-8 rounded-xl border border-white/5 h-[600px] overflow-y-auto lyrics-scroll animate-fade-in">
+                    <h3 class="text-2xl font-header font-bold text-white mb-6 border-l-4 border-brand-red pl-4">RECENT REVIEWS</h3>
+                    <div id="public-reviews-container" class="space-y-4">
+                        <!-- Reviews injected here -->
+                        <p class="text-gray-500 italic text-center">Loading reviews...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- ADMIN DASHBOARD VIEW (Hidden by default)   -->
+    <!-- ========================================== -->
+    <div id="admin-view" class="hidden h-screen flex flex-col md:flex-row bg-[#080808] overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-brand-gray border-r border-gray-800 flex-col hidden md:flex h-full">
+            <div class="h-16 flex items-center justify-center border-b border-gray-800 shrink-0">
+                <span class="font-header font-bold text-xl tracking-tighter">JAYU <span class="text-brand-red">ADMIN</span></span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-2 px-2">
+                    <li>
+                        <button onclick="switchTab('songs')" class="sidebar-link active w-full text-left px-4 py-3 rounded transition flex items-center gap-3 text-gray-300 hover:bg-gray-700 hover:text-white">
+                            <i class="fa-solid fa-music w-5"></i> Songs
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="switchTab('feedback')" class="sidebar-link w-full text-left px-4 py-3 rounded transition flex items-center gap-3 text-gray-300 hover:bg-gray-700 hover:text-white">
+                            <i class="fa-solid fa-comment-dots w-5"></i> Feedback
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="switchTab('users')" class="sidebar-link w-full text-left px-4 py-3 rounded transition flex items-center gap-3 text-gray-300 hover:bg-gray-700 hover:text-white">
+                            <i class="fa-solid fa-users w-5"></i> Users
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-800 shrink-0">
+                <button onclick="logoutAdmin()" class="w-full bg-brand-red text-white hover:bg-white hover:text-brand-red px-4 py-2 rounded transition text-sm font-bold uppercase mb-2">
+                    Back to Website
+                </button>
+                <button onclick="logoutAdmin()" class="w-full border border-gray-600 text-gray-400 hover:text-white hover:border-white px-4 py-2 rounded transition text-sm">
+                    <i class="fa-solid fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-[#0c0c0c]">
+            <!-- Mobile Header -->
+            <div class="md:hidden h-16 bg-brand-gray border-b border-gray-800 flex items-center justify-between px-4 shrink-0">
+                <span class="font-header font-bold text-xl">ADMIN PANEL</span>
+                <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('z-40');" class="text-white"><i class="fa-solid fa-bars"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-8">
+                
+                <!-- Songs Management Section -->
+                <div id="songs-section" class="tab-content block animate-fade-in">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-3xl font-header font-bold">Song Management</h2>
+                        <button onclick="toggleSongForm()" class="bg-brand-cyan text-black hover:bg-white px-4 py-2 rounded font-bold transition">
+                            <i class="fa-solid fa-plus mr-2"></i> Upload New Song
+                        </button>
+                    </div>
+
+                    <!-- Add/Edit Form -->
+                    <div id="song-form-container" class="hidden mb-8 bg-brand-gray p-6 rounded-lg border border-gray-700 shadow-xl">
+                        <h3 class="text-xl font-bold mb-4 text-brand-red" id="form-title">Upload Song</h3>
+                        <form id="song-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="hidden" id="song-id">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs text-gray-500 uppercase mb-1">Song Title</label>
+                                <input type="text" id="song-title" required class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">Artist</label>
+                                <input type="text" id="song-artist" required class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">Category</label>
+                                <select id="song-category" class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                                    <option value="Timli">Timli</option>
+                                    <option value="Remix">Remix</option>
+                                    <option value="Original">Original</option>
+                                    <option value="Lofi">Lofi</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">YouTube Video ID</label>
+                                <input type="text" id="song-yt" placeholder="e.g. dQw4w9WgXcQ" class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">MP3 Link (Drive)</label>
+                                <input type="text" id="song-mp3" placeholder="Google Drive URL" class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">Release Date</label>
+                                <input type="date" id="song-date" class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase mb-1">Tags (Comma separated)</label>
+                                <input type="text" id="song-tags" placeholder="dance, folk, bass" class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:border-brand-cyan focus:outline-none">
+                            </div>
+                            <div class="md:col-span-2 flex gap-3 mt-4">
+                                <button type="submit" class="bg-brand-red text-white px-6 py-2 rounded hover:bg-red-600 transition">Save Song</button>
+                                <button type="button" onclick="toggleSongForm()" class="bg-transparent border border-gray-600 text-gray-400 px-6 py-2 rounded hover:text-white transition">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Songs Table -->
+                    <div class="overflow-x-auto bg-brand-gray rounded-lg border border-gray-700">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-black/50 text-gray-400 text-sm uppercase">
+                                    <th class="p-4 border-b border-gray-700">Date</th>
+                                    <th class="p-4 border-b border-gray-700">Title</th>
+                                    <th class="p-4 border-b border-gray-700">Artist</th>
+                                    <th class="p-4 border-b border-gray-700">Category</th>
+                                    <th class="p-4 border-b border-gray-700 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="songs-table-body" class="text-sm">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Feedback Management Section -->
+                <div id="feedback-section" class="tab-content hidden animate-fade-in">
+                    <h2 class="text-3xl font-header font-bold mb-8">Feedback Management</h2>
+                    <div class="grid grid-cols-1 gap-4" id="admin-feedback-list">
+                        <!-- Admin reviews injected here -->
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div id="users-section" class="tab-content hidden animate-fade-in">
+                    <h2 class="text-3xl font-header font-bold mb-8">User Management</h2>
+                    <div class="overflow-x-auto bg-brand-gray rounded-lg border border-gray-700">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-black/50 text-gray-400 text-sm uppercase">
+                                    <th class="p-4 border-b border-gray-700">User</th>
+                                    <th class="p-4 border-b border-gray-700">Email</th>
+                                    <th class="p-4 border-b border-gray-700">Status</th>
+                                    <th class="p-4 border-b border-gray-700 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-700/50 hover:bg-white/5 transition">
+                                    <td class="p-4 flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-brand-cyan text-black flex items-center justify-center font-bold">JD</div>
+                                        John Doe
+                                    </td>
+                                    <td class="p-4 text-gray-400">john@example.com</td>
+                                    <td class="p-4"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">Active</span></td>
+                                    <td class="p-4 text-right">
+                                        <button class="text-red-500 hover:text-red-400 text-xs border border-red-500 px-2 py-1 rounded">Block</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Auth Flow
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        // State Containers
+        let songsDB = [];
+        let feedbackDB = [];
+
+        // Data References
+        let songsCol, feedbackCol;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Initialize Collections
+                songsCol = collection(db, 'artifacts', appId, 'public', 'data', 'songs');
+                feedbackCol = collection(db, 'artifacts', appId, 'public', 'data', 'feedback');
+
+                // Real-time Listeners
+                onSnapshot(songsCol, (snapshot) => {
+                    songsDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // Update UI
+                    if(document.getElementById('public-songs-grid')) renderPublicSongs();
+                    if(document.getElementById('songs-table-body')) renderAdminSongs();
+                });
+
+                onSnapshot(feedbackCol, (snapshot) => {
+                    feedbackDB = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // Update UI
+                    if(document.getElementById('public-reviews-container')) renderPublicReviews();
+                    if(document.getElementById('admin-feedback-list')) renderAdminFeedback();
+                });
+            }
+        });
+
+        // --- PUBLIC FUNCTIONS ---
+
+        // Render Public Songs Grid
+        window.renderPublicSongs = () => {
+            const container = document.getElementById('public-songs-grid');
+            if(!container) return;
+            
+            container.innerHTML = '';
+            if(songsDB.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500">No songs released yet.</div>';
+                return;
+            }
+
+            songsDB.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'group relative bg-brand-gray rounded-xl overflow-hidden hover:-translate-y-2 transition duration-300 shadow-xl cursor-pointer';
+                card.onclick = () => openSongView(song.id);
+                card.innerHTML = `
+                    <div class="relative aspect-square overflow-hidden">
+                        <img src="${song.img || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop'}" alt="${song.title}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" onerror="this.src='https://placehold.co/600x600/252A34/FFF?text=Music'">
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
+                            <button class="w-14 h-14 rounded-full bg-brand-red text-white flex items-center justify-center hover:scale-110 transition shadow-lg shadow-brand-red/50">
+                                <i class="fa-solid fa-play ml-1 text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold font-header text-white group-hover:text-brand-red transition">${song.title}</h3>
+                                <p class="text-gray-400 text-sm">${song.artist}</p>
+                            </div>
+                            <span class="text-xs font-bold border border-gray-600 px-2 py-1 rounded text-gray-400">${song.category || 'Single'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        // Render Public Reviews
+        window.renderPublicReviews = () => {
+            const container = document.getElementById('public-reviews-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const approved = feedbackDB.filter(r => r.approved);
+            if(approved.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 italic text-center">No reviews yet. Be the first!</p>';
+                return;
+            }
+
+            approved.forEach(review => {
+                let starsHtml = '';
+                for(let i=0; i<5; i++) {
+                    starsHtml += i < review.rating ? '<i class="fa-solid fa-star text-brand-red text-xs"></i>' : '<i class="fa-solid fa-star text-gray-700 text-xs"></i>';
+                }
+                const card = document.createElement('div');
+                card.className = 'bg-brand-dark/50 p-4 rounded border border-gray-700';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-bold text-brand-cyan">${review.name}</span>
+                        <div class="flex gap-1">${starsHtml}</div>
+                    </div>
+                    <p class="text-gray-300 text-sm">"${review.text}"</p>
+                    <span class="text-xs text-gray-600 mt-2 block">${review.date}</span>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        // Submit Feedback
+        const feedbackForm = document.getElementById('feedback-form');
+        if(feedbackForm) {
+            feedbackForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('review-name').value;
+                const rating = document.getElementById('review-rating').value;
+                const text = document.getElementById('review-text').value;
+
+                if(rating == 0) { alert('Please select a star rating.'); return; }
+
+                try {
+                    await addDoc(feedbackCol, {
+                        name,
+                        rating: parseInt(rating),
+                        text,
+                        approved: false,
+                        date: new Date().toLocaleDateString()
+                    });
+                    feedbackForm.reset();
+                    document.querySelectorAll('.star-rating i').forEach(s => s.classList.remove('active', 'text-gray-600'));
+                    document.querySelectorAll('.star-rating i').forEach(s => s.classList.add('text-gray-600'));
+                    alert('Review submitted! Waiting for approval.');
+                } catch (err) {
+                    console.error("Error adding review: ", err);
+                    alert("Failed to submit review.");
+                }
+            });
+        }
+
+        // --- ADMIN FUNCTIONS ---
+
+        // Render Admin Song Table
+        window.renderAdminSongs = () => {
+            const tbody = document.getElementById('songs-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            songsDB.forEach(song => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-700/50 hover:bg-white/5 transition';
+                tr.innerHTML = `
+                    <td class="p-4 text-gray-400">${song.date || '-'}</td>
+                    <td class="p-4 font-bold text-white">${song.title}</td>
+                    <td class="p-4 text-gray-300">${song.artist}</td>
+                    <td class="p-4"><span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs border border-gray-600">${song.category}</span></td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="editSong('${song.id}')" class="text-brand-cyan hover:text-white transition"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteSong('${song.id}')" class="text-brand-red hover:text-white transition"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // Render Admin Feedback List
+        window.renderAdminFeedback = () => {
+            const container = document.getElementById('admin-feedback-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if(feedbackDB.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No feedback found.</p>';
+                return;
+            }
+
+            feedbackDB.forEach(review => {
+                let statusBadge = review.approved 
+                    ? '<span class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">Approved</span>' 
+                    : '<span class="text-xs bg-yellow-900 text-yellow-300 px-2 py-1 rounded">Pending</span>';
+
+                const card = document.createElement('div');
+                card.className = 'bg-brand-gray p-4 rounded border border-gray-700 flex justify-between items-start';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-white">${review.name}</span>
+                            <span class="text-xs text-brand-red font-bold">${review.rating} ★</span>
+                            ${statusBadge}
+                            <span class="text-xs text-gray-500">${review.date}</span>
+                        </div>
+                        <p class="text-gray-300 italic">"${review.text}"</p>
+                    </div>
+                    <div class="flex gap-2">
+                        ${!review.approved ? `<button onclick="approveReview('${review.id}')" class="text-green-500 hover:text-green-400" title="Approve"><i class="fa-solid fa-check"></i></button>` : ''}
+                        <button onclick="deleteReview('${review.id}')" class="text-red-500 hover:text-red-400" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        // Submit Song (Add/Edit)
+        const songForm = document.getElementById('song-form');
+        if(songForm) {
+            songForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('song-id').value;
+                const songData = {
+                    title: document.getElementById('song-title').value,
+                    artist: document.getElementById('song-artist').value,
+                    category: document.getElementById('song-category').value,
+                    ytId: document.getElementById('song-yt').value,
+                    mp3: document.getElementById('song-mp3').value,
+                    date: document.getElementById('song-date').value,
+                    tags: document.getElementById('song-tags').value.split(',').map(t => t.trim()),
+                    // Default image for now since we don't have file upload storage in this demo
+                    img: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=600' 
+                };
+
+                try {
+                    if (id) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', id), songData);
+                    } else {
+                        await addDoc(songsCol, songData);
+                    }
+                    toggleSongForm();
+                } catch (err) {
+                    console.error("Error saving song:", err);
+                    alert("Error saving song.");
+                }
+            });
+        }
+
+        // Admin Actions
+        window.deleteSong = async (id) => {
+            if(confirm('Delete this song?')) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'songs', id));
+            }
+        };
+
+        window.editSong = (id) => {
+            const song = songsDB.find(s => s.id === id);
+            if(song) {
+                document.getElementById('song-id').value = song.id;
+                document.getElementById('song-title').value = song.title;
+                document.getElementById('song-artist').value = song.artist;
+                document.getElementById('song-category').value = song.category;
+                document.getElementById('song-yt').value = song.ytId || '';
+                document.getElementById('song-mp3').value = song.mp3 || '';
+                document.getElementById('song-date').value = song.date || '';
+                document.getElementById('song-tags').value = song.tags ? song.tags.join(', ') : '';
+                
+                document.getElementById('form-title').innerText = 'Edit Song';
+                document.getElementById('song-form-container').classList.remove('hidden');
+            }
+        };
+
+        window.approveReview = async (id) => {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedback', id), { approved: true });
+        };
+
+        window.deleteReview = async (id) => {
+            if(confirm('Delete this review?')) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'feedback', id));
+            }
+        };
+
+        // --- NAVIGATION & UI HELPERS ---
+        
+        window.openSongView = (id) => {
+            const song = songsDB.find(s => s.id === id);
+            if (!song) return;
+
+            document.getElementById('public-view').classList.add('hidden');
+            document.getElementById('song-view').classList.remove('hidden');
+            document.getElementById('sticky-player').classList.add('hidden');
+            window.scrollTo(0,0);
+
+            // Populate Song Details
+            document.getElementById('detail-cover-img').src = song.img || 'https://placehold.co/600x600';
+            document.getElementById('detail-category-badge').innerText = song.category;
+            document.getElementById('detail-song-title').innerText = song.title;
+            document.getElementById('detail-song-artist').innerText = song.artist;
+            if(song.ytId) {
+                document.getElementById('detail-yt-embed').src = `https://www.youtube.com/embed/${song.ytId}`;
+            }
+            
+            const tagsContainer = document.getElementById('detail-tags-container');
+            tagsContainer.innerHTML = '';
+            if(song.tags) {
+                song.tags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'border border-gray-600 text-gray-400 px-3 py-1 rounded-full text-xs uppercase tracking-wider';
+                    span.innerText = tag;
+                    tagsContainer.appendChild(span);
+                });
+            }
+
+            // Related
+            const relatedGrid = document.getElementById('detail-related-grid');
+            relatedGrid.innerHTML = '';
+            songsDB.filter(s => s.id !== id).slice(0, 3).forEach(r => {
+                const card = document.createElement('div');
+                card.onclick = () => openSongView(r.id);
+                card.className = 'group flex items-center gap-4 bg-brand-gray/50 hover:bg-brand-gray p-4 rounded-lg transition border border-transparent hover:border-brand-red/30 cursor-pointer';
+                card.innerHTML = `
+                    <img src="${r.img || 'https://placehold.co/100x100'}" class="w-16 h-16 rounded object-cover shadow-md group-hover:scale-110 transition">
+                    <div>
+                        <h4 class="font-bold text-white group-hover:text-brand-cyan transition">${r.title}</h4>
+                        <p class="text-xs text-gray-400">${r.artist}</p>
+                    </div>
+                `;
+                relatedGrid.appendChild(card);
+            });
+        };
+
+        window.closeSongView = () => {
+            document.getElementById('song-view').classList.add('hidden');
+            document.getElementById('public-view').classList.remove('hidden');
+            document.getElementById('sticky-player').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
+
+        // --- Standard UI Logic ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('glass-nav', 'py-2');
+                navbar.classList.remove('py-4');
+            } else {
+                navbar.classList.remove('glass-nav', 'py-2');
+                navbar.classList.add('py-4');
+            }
+        });
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Admin Auth
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login-form');
+        const adminView = document.getElementById('admin-view');
+        
+        window.openLoginModal = () => loginModal.classList.remove('hidden');
+        window.closeLoginModal = () => { loginModal.classList.add('hidden'); document.getElementById('login-error').classList.add('hidden'); };
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const passInput = document.getElementById('password-input');
+            if (passInput.value === 'jayustr@123') {
+                loginModal.classList.add('hidden');
+                document.getElementById('public-view').classList.add('hidden');
+                document.getElementById('song-view').classList.add('hidden');
+                document.getElementById('feedback-view').classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminView.classList.add('flex');
+                renderAdminSongs(); // Force render on load
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        window.logoutAdmin = () => {
+            adminView.classList.add('hidden');
+            adminView.classList.remove('flex');
+            document.getElementById('public-view').classList.remove('hidden');
+            document.getElementById('sticky-player').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+        };
+
+        window.toggleSongForm = () => {
+            const container = document.getElementById('song-form-container');
+            container.classList.toggle('hidden');
+            if(container.classList.contains('hidden')) {
+                document.getElementById('song-form').reset();
+                document.getElementById('song-id').value = '';
+                document.getElementById('form-title').innerText = 'Upload Song';
+            }
+        };
+
+        // Feedback View Toggles
+        window.openFeedbackView = () => {
+            document.getElementById('public-view').classList.add('hidden');
+            document.getElementById('song-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('feedback-view').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
+
+        window.closeFeedbackView = () => {
+            document.getElementById('feedback-view').classList.add('hidden');
+            document.getElementById('public-view').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
+
+        // Star Rating UI
+        document.querySelectorAll('.star-rating i').forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = star.getAttribute('data-rating');
+                document.getElementById('review-rating').value = rating;
+                document.querySelectorAll('.star-rating i').forEach(s => {
+                    if(s.getAttribute('data-rating') <= rating) {
+                        s.classList.add('active');
+                        s.classList.remove('text-gray-600');
+                    } else {
+                        s.classList.remove('active');
+                        s.classList.add('text-gray-600');
+                    }
+                });
+            });
+        });
+
+        // Tab Switching
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            document.getElementById(tabId + '-section').classList.remove('hidden');
+            document.getElementById(tabId + '-section').classList.add('block');
+            
+            // Render specific tab content if needed
+            if(tabId === 'feedback') renderAdminFeedback();
+            if(tabId === 'songs') renderAdminSongs();
+        };
+
+    </script>
+</body>
+</html>
